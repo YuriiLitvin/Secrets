@@ -32,7 +32,20 @@ app.get("/register", function(req, res) {
   res.render("register");
 });
 
-
+app.post("/register", function(req, res) {
+  const user = new User ({
+    email: req.body.username,
+    password: req.body.password
+  });
+  user.save(function(err) {
+    if (!err) {
+      console.log("Registration is completed successfully.");
+      res.render("secrets");
+    } else {
+      console.log(err);
+    }
+  });
+});
 
 
 
