@@ -8,6 +8,7 @@ const session = require("express-session");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const FacebookStrategy = require("passport-facebook");
 const findOrCreate = require("mongoose-findorcreate");
 
 const app = express();
@@ -30,7 +31,8 @@ mongoose.connect("mongodb://localhost:27017/userDB");
 const userSchema = new mongoose.Schema({
   email: String,
   password: String,
-  googleId: String
+  googleId: String,
+  facebookId: String
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -50,13 +52,25 @@ passport.deserializeUser(function(id, done) {
 });
 
 passport.use(new GoogleStrategy({
-  clientID: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: "http://localhost:3000/auth/google/secrets",
 },
   function(accessToken, refreshToken, profile, cb) {
-    console.log(profile);
+    // console.log(profile);
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }));
+
+passport.use(new FacebookStrategy({
+  clientID: process.env.FACEBOOK_APP_ID,
+  clientSecret: process.env.FACEBOOK_APP_SECRET,
+  callbackURL: "http://localhost:3000/oauth2/redirect/facebook",
+},
+  function(accessToke, refreshToken, profile, cb) {
+    console.log(profile);
+    User.findOrCreate({ facebookId: profile.id }, function(err, user) {
       return cb(err, user);
     });
   }));
@@ -70,6 +84,15 @@ app.get("/auth/google",
 
 app.get("/auth/google/secrets",
   passport.authenticate("google", { failureRedirect: "/login" }),
+  function(req, res) {
+    res.redirect("/secrets");
+  });
+
+app.get("/login/facebook",
+  passport.authenticate("facebook", { scope: ["email"] }));
+
+app.get("/oauth2/redirect/facebook",
+  passport.authenticate("facebook", { failureRedirect: "/login", failureMessage: true }),
   function(req, res) {
     res.redirect("/secrets");
   });
