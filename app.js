@@ -18,7 +18,7 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(session({
-  secret: "Thisisourlittlesecret",
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false
 }));
@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
   password: String,
   googleId: String,
   facebookId: String,
-  secret: String
+  secrets: []
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -59,7 +59,6 @@ passport.use(new GoogleStrategy({
   callbackURL: "http://localhost:3000/auth/google/secrets",
 },
   function(accessToken, refreshToken, profile, cb) {
-    // console.log(profile);
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
       return cb(err, user);
     });
@@ -71,7 +70,6 @@ passport.use(new FacebookStrategy({
   callbackURL: "http://localhost:3000/oauth2/redirect/facebook",
 },
   function(accessToke, refreshToken, profile, cb) {
-    // console.log(profile);
     User.findOrCreate({ facebookId: profile.id }, function(err, user) {
       return cb(err, user);
     });
@@ -109,7 +107,7 @@ app.get("/register", function(req, res) {
 
 app.get("/secrets", function(req, res) {
   if (req.isAuthenticated()) {
-    User.find({ "secret": { $ne: null }}, function(err, foundUsers) {
+    User.find({ "secrets": { $ne: null }}, function(err, foundUsers) {
       if (err) {
         console.log(err);
       } else {
@@ -131,13 +129,12 @@ app.get("/submit", function(req, res) {
 
 app.post("/submit", function(req, res) {
   const submittedSecret = req.body.secret;
-  console.log(req.user.id);
   User.findById(req.user.id, function(err, foundUser) {
     if (err) {
       console.log(err);
     } else {
       if (foundUser) {
-        foundUser.secret = submittedSecret;
+        foundUser.secrets.push(submittedSecret);
         foundUser.save(function() {
           res.redirect("/secrets");
         });
