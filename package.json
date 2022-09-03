@@ -4,7 +4,8 @@
   "description": "web app to store secrets anonimously",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
@@ -12,9 +13,7 @@
   },
   "author": "Yuri Litvin",
   "license": "ISC",
-  "engines": {
-    "node": "16.17.0"
-  },
+  
   "bugs": {
     "url": "https://github.com/YuriiLitvin/Secrets/issues"
   },
@@ -35,5 +34,8 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^7.1.2"
+  },
+  "engines": {
+    "node": "16.17.0"
   }
 }
