@@ -1,5 +1,4 @@
-
-require("dotenv").config();
+const dotenv = require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
@@ -18,7 +17,7 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(session({
-  secret: process.env.SECRET,
+  secret: dotenv.parsed.SECRET,
   resave: false,
   saveUninitialized: false
 }));
@@ -26,7 +25,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect("mongodb+srv://admin-yuri:" + process.env.ATLAS_PASSWORD + "@cluster0.rvllyyy.mongodb.net/userDB");
+mongoose.connect("mongodb+srv://admin-yuri:" + dotenv.parsed.ATLAS_PASSWORD + "@cluster0.rvllyyy.mongodb.net/userDB");
 
 const userSchema = new mongoose.Schema({
   email: String,
@@ -54,8 +53,8 @@ passport.deserializeUser(function(id, done) {
 });
 
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  clientID: dotenv.parsed.GOOGLE_CLIENT_ID,
+  clientSecret: dotenv.parsed.GOOGLE_CLIENT_SECRET,
   callbackURL: "/auth/google/secrets",
 },
   function(accessToken, refreshToken, profile, cb) {
@@ -65,8 +64,8 @@ passport.use(new GoogleStrategy({
   }));
 
 passport.use(new FacebookStrategy({
-  clientID: process.env.FACEBOOK_APP_ID,
-  clientSecret: process.env.FACEBOOK_APP_SECRET,
+  clientID: dotenv.parsed.FACEBOOK_APP_ID,
+  clientSecret: dotenv.parsed.FACEBOOK_APP_SECRET,
   callbackURL: "/oauth2/redirect/facebook",
 },
   function(accessToke, refreshToken, profile, cb) {
