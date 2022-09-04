@@ -1,4 +1,4 @@
-const dotenv = require("dotenv").config();
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
@@ -17,15 +17,15 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(session({
-  secret: dotenv.parsed.SECRET,
+  secret: process.env.SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect("mongodb+srv://admin-yuri:" + dotenv.parsed.ATLAS_PASSWORD + "@cluster0.rvllyyy.mongodb.net/userDB");
+mongoose.connect("mongodb+srv://admin-yuri:" + process.env.ATLAS_PASSWORD + "@cluster0.rvllyyy.mongodb.net/userDB");
 
 const userSchema = new mongoose.Schema({
   email: String,
@@ -53,8 +53,8 @@ passport.deserializeUser(function(id, done) {
 });
 
 passport.use(new GoogleStrategy({
-  clientID: dotenv.parsed.GOOGLE_CLIENT_ID,
-  clientSecret: dotenv.parsed.GOOGLE_CLIENT_SECRET,
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: "/auth/google/secrets",
 },
   function(accessToken, refreshToken, profile, cb) {
@@ -64,8 +64,8 @@ passport.use(new GoogleStrategy({
   }));
 
 passport.use(new FacebookStrategy({
-  clientID: dotenv.parsed.FACEBOOK_APP_ID,
-  clientSecret: dotenv.parsed.FACEBOOK_APP_SECRET,
+  clientID: process.env.FACEBOOK_APP_ID,
+  clientSecret: process.env.FACEBOOK_APP_SECRET,
   callbackURL: "/oauth2/redirect/facebook",
 },
   function(accessToke, refreshToken, profile, cb) {
@@ -176,6 +176,7 @@ app.post("/login", function(req, res) {
   req.login(user, function(err) {
     if (err) {
       console.log(err);
+      res.redirect("/register");
     } else {
       passport.authenticate("local")(req, res, function() {
         res.redirect("/secrets");
