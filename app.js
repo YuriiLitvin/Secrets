@@ -105,7 +105,6 @@ app.get("/register", function(req, res) {
 });
 
 app.get("/secrets", function(req, res) {
-  if (req.isAuthenticated()) {
     User.find({ "secrets": { $ne: null }}, function(err, foundUsers) {
       if (err) {
         console.log(err);
@@ -115,15 +114,18 @@ app.get("/secrets", function(req, res) {
         }
       }
     });
-  }
 });
 
 app.get("/submit", function(req, res) {
-  if (req.isAuthenticated()) {
     res.render("submit");
-  } else {
-    res.redirect("/login");
-  }
+});
+
+app.get("/login-fail", function(req, res) {
+  res.render("login-fail");
+});
+
+app.get("/user-exist", function (req, res) {
+  res.render("user-exist");
 });
 
 app.post("/submit", function(req, res) {
@@ -153,11 +155,9 @@ app.get("/logout", function(req, res) {
 });
 
 app.post("/register", function(req, res) {
-
   User.register({username: req.body.username}, req.body.password, function(err, user) {
     if (err) {
-      console.log(err);
-      res.redirect("/register");
+      res.redirect("/user-exist");
     } else {
       passport.authenticate("local")(req, res, function() {
         res.redirect("/secrets");
@@ -167,18 +167,16 @@ app.post("/register", function(req, res) {
 });
 
 app.post("/login", function(req, res) {
-
   const user = new User({
     username: req.body.username,
     password: req.body.password
   });
-
+  
   req.login(user, function(err) {
     if (err) {
       console.log(err);
-      res.redirect("/register");
     } else {
-      passport.authenticate("local")(req, res, function() {
+      passport.authenticate("local", { failureRedirect: "/login-fail", failureMessage: true })(req, res, function() {
         res.redirect("/secrets");
       });
     }
